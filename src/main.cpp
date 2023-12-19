@@ -7,6 +7,9 @@ int main()
 {
     std::ifstream data_ifstream("datasets/ks16a.txt");
     ks_problem problem(data_ifstream);
+
+    data_ifstream.close();
+
     const size_t &capacity = problem.const_capacity();
     const std::vector<ks_pair> &pairs = problem.const_ks_pairs();
     const size_t dimension = pairs.size();
