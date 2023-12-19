@@ -23,14 +23,12 @@ class ks_problem
 {
 private:
     std::vector<ks_pair> m_ks_pairs;
-    uint64_t m_capacity;
+    size_t m_capacity;
 
 public:
     ks_problem(std::istream &_istream);
-    std::vector<ks_pair> &ks_pairs();
     const std::vector<ks_pair> &const_ks_pairs() const;
-    uint64_t &capacity();
-    const uint64_t &const_capacity() const;
+    const size_t &const_capacity() const;
 };
 
 class ks_particle : public particle<bool, double, uint64_t>
@@ -52,7 +50,7 @@ private:
 
 public:
     ks_swarm();
-    ks_swarm(const std::vector<particle<bool, double, uint64_t> *> &_particle_ptrs);
+    ks_swarm(const std::vector<ks_particle *> &_particle_ptrs);
     void update_position();
 };
 

@@ -1,7 +1,7 @@
 #include <knapsack.hpp>
+#include <random.hpp>
 #include <algorithm>
 #include <cmath>
-#include <random>
 
 std::random_device rand_gen;
 
@@ -54,22 +54,12 @@ ks_problem::ks_problem(std::istream &_istream)
     _istream >> m_capacity;
 }
 
-std::vector<ks_pair> &ks_problem::ks_pairs()
-{
-    return m_ks_pairs;
-}
-
 const std::vector<ks_pair> &ks_problem::const_ks_pairs() const
 {
     return m_ks_pairs;
 }
 
-uint64_t &ks_problem::capacity()
-{
-    return m_capacity;
-}
-
-const uint64_t &ks_problem::const_capacity() const
+const size_t &ks_problem::const_capacity() const
 {
     return m_capacity;
 }
@@ -115,8 +105,13 @@ double ks_swarm::sigmoid(const double &x)
 ks_swarm::ks_swarm() :
     swarm() {}
 
-ks_swarm::ks_swarm(const std::vector<particle<bool, double, uint64_t> *> &_particle_ptrs) :
-    swarm(_particle_ptrs) {}
+ks_swarm::ks_swarm(const std::vector<ks_particle *> &_particle_ptrs)
+{
+    for(size_t i = 0; i < _particle_ptrs.size(); ++i)
+    {
+        m_particle_ptrs.push_back(_particle_ptrs[i]);
+    }
+}
 
 void ks_swarm::update_position()
 {
@@ -129,8 +124,8 @@ void ks_swarm::update_position()
         std::vector<bool> &position = item->position();
         std::vector<bool> &best_position = item->best_position().value();
         std::vector<double> &velocity = item->velocity();
-        const double r0 = 1.0;
-        const double r1 = 1.0;
+        const double r0 = random::get_double();
+        const double r1 = random::get_double();
         const size_t dimension = velocity.size();
 
         for(size_t i = 0; i < dimension; ++i)
@@ -139,19 +134,9 @@ void ks_swarm::update_position()
                 + c1 * r1 * (m_best_position.value()[i] - position[i]);
             velocity[i] = std::clamp(velocity[i], -vmax, vmax);
             velocity[i] = sigmoid(velocity[i]);
-            const uint64_t rand_uint64 = rand_gen();
-            double rand_double;
-
-            if(rand_uint64)
-            {
-                rand_double = (double)rand_uint64 / rand_gen.max();
-            }
-            else
-            {
-                rand_double = 0.0;
-            }
+            double rand_value = random::get_double();
             
-            if(rand_double < velocity[i])
+            if(rand_value < velocity[i])
             {
                 position[i] = true;
             }

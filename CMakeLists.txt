@@ -9,6 +9,7 @@ add_subdirectory("lib/pso")
 add_executable(ks_bpso 
     "src/knapsack.cpp"
     "src/main.cpp"
+    "src/random.cpp"
 )
 
 target_include_directories(ks_bpso PRIVATE "include")

@@ -8,6 +8,18 @@ swarm<P, V, F>::swarm(const std::vector<particle<P, V, F> *> &_particle_ptrs) :
     m_particle_ptrs(_particle_ptrs) {}
 
 template <typename P, typename V, typename F>
+std::optional<F> &swarm<P, V, F>::best_fitness()
+{
+    return m_best_fitness;
+}
+
+template <typename P, typename V, typename F>
+const std::optional<F> &swarm<P, V, F>::const_best_fitness() const
+{
+    return m_best_fitness;
+}
+
+template <typename P, typename V, typename F>
 void swarm<P, V, F>::update_fitness()
 {
     for(particle<P, V, F> *item : m_particle_ptrs)

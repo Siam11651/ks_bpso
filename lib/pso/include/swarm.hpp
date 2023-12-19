@@ -14,6 +14,8 @@ protected:
 public:
     swarm();
     swarm(const std::vector<particle<P, V, F> *> &_particle_ptrs);
+    std::optional<F> &best_fitness();
+    const std::optional<F> &const_best_fitness() const;
     virtual void update_position() = 0;
     void update_fitness();
 };
