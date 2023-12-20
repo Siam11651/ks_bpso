@@ -65,10 +65,12 @@ protected:
 public:
     ks_bpso(ks_swarm *_swarm_ptr);
     ks_bpso(const size_t &_generation_count, ks_swarm *_swarm_ptr);
+    size_t &generation_count();
+    const size_t &const_generation_count() const;
     virtual void run();
 };
 
-class ks_tvbpso : ks_bpso
+class ks_tvbpso : public ks_bpso
 {
 private:
     size_t m_max_iteration;

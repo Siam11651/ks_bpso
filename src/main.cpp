@@ -80,6 +80,7 @@ int main()
         swarm.update_fitness();
 
         ks_bpso bpso(&swarm);
+        bpso.generation_count() = 500;
 
         bpso.run();
 
@@ -104,7 +105,8 @@ int main()
         swarm.update_fitness();
 
         ks_tvbpso tvbpso(&swarm);
-        tvbpso.max_iteration() = 2;
+        tvbpso.generation_count() = 500;
+        tvbpso.max_iteration() = 10;
 
         tvbpso.run();
 

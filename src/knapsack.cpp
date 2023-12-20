@@ -167,6 +167,16 @@ ks_bpso::ks_bpso(const size_t &_generation_count, ks_swarm *_swarm_ptr) :
     m_generation_count(_generation_count) ,
     pso(_swarm_ptr) {}
 
+size_t &ks_bpso::generation_count()
+{
+    return m_generation_count;
+}
+
+const size_t &ks_bpso::const_generation_count() const
+{
+    return m_generation_count;
+}
+
 void ks_bpso::run()
 {
     for(size_t i = 0; i < m_generation_count; ++i)
@@ -223,9 +233,9 @@ void ks_tvbpso::run()
 {
     for(size_t i = 0; i < m_max_iteration; ++i)
     {
+        ((ks_swarm *)m_swarm_ptr)->vmax() = m_vlow + (i * (m_vhigh - m_vlow)) / m_max_iteration;
 
-
-        for(size_t i = 0; i < m_generation_count; ++i)
+        for(size_t j = 0; j < m_generation_count; ++j)
         {
             m_swarm_ptr->update_position();
             m_swarm_ptr->update_fitness();
