@@ -161,5 +161,6 @@ void ks_bpso::run()
     for(size_t i = 0; i < m_generation_count; ++i)
     {
         m_swarm_ptr->update_position();
+        m_swarm_ptr->update_fitness();
     }
 }
