@@ -103,9 +103,11 @@ double ks_swarm::sigmoid(const double &x)
 }
 
 ks_swarm::ks_swarm() :
+    m_vmax(6.0),
     swarm() {}
 
-ks_swarm::ks_swarm(const std::vector<ks_particle *> &_particle_ptrs)
+ks_swarm::ks_swarm(const std::vector<ks_particle *> &_particle_ptrs) :
+    m_vmax(6.0)
 {
     for(size_t i = 0; i < _particle_ptrs.size(); ++i)
     {
@@ -113,11 +115,20 @@ ks_swarm::ks_swarm(const std::vector<ks_particle *> &_particle_ptrs)
     }
 }
 
+double &ks_swarm::vmax()
+{
+    return m_vmax;
+}
+
+const double &ks_swarm::vmax() const
+{
+    return m_vmax;
+}
+
 void ks_swarm::update_position()
 {
     const double c0 = 2.0f;
     const double c1 = 2.0f;
-    const double vmax = 4.0;
 
     for(particle<bool, double, uint64_t> *item : m_particle_ptrs)
     {
@@ -132,7 +143,7 @@ void ks_swarm::update_position()
         {
             velocity[i] += c0 * r0 * (best_position[i] - position[i])
                 + c1 * r1 * (m_best_position.value()[i] - position[i]);
-            velocity[i] = std::clamp(velocity[i], -vmax, vmax);
+            velocity[i] = std::clamp(velocity[i], -m_vmax, m_vmax);
             velocity[i] = sigmoid(velocity[i]);
             double rand_value = random::get_double();
             
@@ -162,5 +173,62 @@ void ks_bpso::run()
     {
         m_swarm_ptr->update_position();
         m_swarm_ptr->update_fitness();
+    }
+}
+
+ks_tvbpso::ks_tvbpso(ks_swarm *_swarm_ptr) :
+    m_max_iteration(10),
+    m_vlow(2.0),
+    m_vhigh(4.0),
+    ks_bpso(_swarm_ptr) {}
+
+ks_tvbpso::ks_tvbpso(const size_t &_generation_count, const size_t &_max_iteration,
+    ks_swarm *_swarm_ptr) :
+    m_max_iteration(_max_iteration),
+    m_vlow(2.0),
+    m_vhigh(4.0),
+    ks_bpso(_generation_count, _swarm_ptr) {}
+
+size_t &ks_tvbpso::max_iteration()
+{
+    return m_max_iteration;
+}
+
+const size_t &ks_tvbpso::const_max_iteration() const
+{
+    return m_max_iteration;
+}
+
+double &ks_tvbpso::vlow()
+{
+    return m_vlow;
+}
+
+const double &ks_tvbpso::const_vlow() const
+{
+    return m_vlow;
+}
+
+double &ks_tvbpso::vhigh()
+{
+    return m_vhigh;
+}
+
+const double &ks_tvbpso::const_vhigh() const
+{
+    return m_vhigh;
+}
+
+void ks_tvbpso::run()
+{
+    for(size_t i = 0; i < m_max_iteration; ++i)
+    {
+
+
+        for(size_t i = 0; i < m_generation_count; ++i)
+        {
+            m_swarm_ptr->update_position();
+            m_swarm_ptr->update_fitness();
+        }
     }
 }
