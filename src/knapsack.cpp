@@ -43,12 +43,12 @@ ks_problem::ks_problem(std::istream &_istream)
 
     for(size_t i = 0; i < pair_count; ++i)
     {
-        _istream >> m_ks_pairs[i].profit();
+        _istream >> m_ks_pairs[i].weight();
     }
 
     for(size_t i = 0; i < pair_count; ++i)
     {
-        _istream >> m_ks_pairs[i].weight();
+        _istream >> m_ks_pairs[i].profit();
     }
 
     _istream >> m_capacity;

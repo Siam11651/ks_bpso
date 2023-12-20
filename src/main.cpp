@@ -1,11 +1,12 @@
 #include <iostream>
 #include <fstream>
+#include <chrono>
 #include <knapsack.hpp>
 #include <random.hpp>
 
 int main()
 {
-    std::ifstream data_ifstream("datasets/ks16a.txt");
+    std::ifstream data_ifstream("datasets/ks20a.txt");
     ks_problem problem(data_ifstream);
 
     data_ifstream.close();
@@ -66,7 +67,10 @@ int main()
         }
     };
 
+    std::cout << "Starting SBPSO..." << std::endl;
+
     size_t max_weight_sum = 0;
+    std::chrono::steady_clock::time_point start_point = std::chrono::steady_clock::now();
 
     for(size_t i = 0; i < 30; ++i)
     {
@@ -89,9 +93,17 @@ int main()
         deallocate_particles(particle_ptrs);
     }
 
+    std::chrono::steady_clock::time_point end_point = std::chrono::steady_clock::now();
+
     std::cout << std::fixed << "SBPSO Average: " << (double)max_weight_sum / 30 << std::endl;
+    std::cout << "SBPSO Time: "
+        << std::chrono::duration_cast<std::chrono::nanoseconds>(end_point - start_point).count() / 1e9
+        << "s" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Starting TVSBPSO..." << std::endl;
 
     max_weight_sum = 0;
+    start_point = std::chrono::steady_clock::now();
 
     for(size_t i = 0; i < 30; ++i)
     {
@@ -115,7 +127,12 @@ int main()
         deallocate_particles(particle_ptrs);
     }
 
+    end_point = std::chrono::steady_clock::now();
+
     std::cout << std::fixed << "TVSPBSO Average: " << (double)max_weight_sum / 30 << std::endl;
+    std::cout << "TVSBPSO Time: "
+        << std::chrono::duration_cast<std::chrono::nanoseconds>(end_point - start_point).count() / 1e9
+        << "s" << std::endl;
 
     return 0;
 }
