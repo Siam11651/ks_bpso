@@ -6,7 +6,7 @@
 
 int main()
 {
-    std::ifstream data_ifstream("datasets/ks20a.txt");
+    std::ifstream data_ifstream("datasets/ks_16a.dat");
     ks_problem problem(data_ifstream);
 
     data_ifstream.close();
