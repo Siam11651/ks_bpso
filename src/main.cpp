@@ -14,11 +14,27 @@ int main()
     const std::vector<ks_pair> &pairs = problem.const_ks_pairs();
     const size_t dimension = pairs.size();
     const size_t swarm_size = 40;
-    std::vector<ks_particle *> particles(swarm_size);
     size_t max_weight_sum = 0;
+    auto allocate_particles = [](std::vector<ks_particle> &_start_particles,
+        std::vector<ks_particle *> &_particle_ptrs) -> void
+    {
+        for(size_t i = 0; i < _particle_ptrs.size(); ++i)
+        {
+            _particle_ptrs[i] = new ks_particle(_start_particles[i]);
+        }
+    };
+    auto deallocate_particles = [](std::vector<ks_particle *> &_particle_ptrs) -> void
+    {
+        for(size_t i = 0; i < _particle_ptrs.size(); ++i)
+        {
+            delete _particle_ptrs[i];
+        }
+    };
 
     for(size_t i = 0; i < 30; ++i)
     {
+        std::vector<ks_particle> start_particles(swarm_size);
+
         for(size_t j = 0; j < swarm_size; ++j)
         {
             std::vector<bool> position(dimension);
@@ -49,10 +65,14 @@ int main()
                 velocity[k] = random::get_bool();
             }
 
-            particles[j] = new ks_particle(&problem, position, velocity);
+            start_particles[j] = ks_particle(&problem, position, velocity);
         }
 
-        ks_swarm swarm(particles);
+        std::vector<ks_particle *> particle_ptrs(swarm_size);
+
+        allocate_particles(start_particles, particle_ptrs);
+
+        ks_swarm swarm(particle_ptrs);
 
         swarm.update_fitness();
 
@@ -64,10 +84,7 @@ int main()
 
         std::cout << '\t' << swarm.const_best_fitness().value() << std::endl;
 
-        for(size_t i = 0; i < swarm_size; ++i)
-        {
-            delete particles[i];
-        }
+        deallocate_particles(particle_ptrs);
     }
 
     std::cout << std::fixed << "average: " << (double)max_weight_sum / 30 << std::endl;
