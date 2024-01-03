@@ -5,7 +5,7 @@
 #include <random.hpp>
 
 constexpr size_t MAX_GENERATIONS = 500;
-constexpr size_t MAX_ITERATIONS = 10;
+constexpr size_t MAX_ITERATIONS = 3;
 
 int main()
 {
@@ -154,7 +154,7 @@ int main()
         ks_ntvbpso ntvbpso(&swarm);
         ntvbpso.generation_count = MAX_GENERATIONS;
         ntvbpso.max_iteration = MAX_ITERATIONS;
-        ntvbpso.param = 100000000;
+        ntvbpso.param = 0.35;
 
         ntvbpso.run();
 
