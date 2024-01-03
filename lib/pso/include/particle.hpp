@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef PARTICLE_H
+#define PARTICLE_H
 
 #include <cstdint>
 #include <vector>

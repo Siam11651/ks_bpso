@@ -1,5 +1,5 @@
-#ifndef BPSO_H
-#define BPSO_H
+#ifndef PSO_H
+#define PSO_H
 
 #include <swarm.hpp>
 
