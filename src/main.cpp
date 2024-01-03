@@ -11,8 +11,8 @@ int main()
 
     data_ifstream.close();
 
-    const size_t &capacity = problem.const_capacity();
-    const std::vector<ks_pair> &pairs = problem.const_ks_pairs();
+    const size_t &capacity = problem.get_capacity();
+    const std::vector<ks_pair> &pairs = problem.get_ks_pairs();
     const size_t dimension = pairs.size();
     const size_t swarm_size = 40;
 
@@ -33,7 +33,7 @@ int main()
 
                 if(position[k])
                 {
-                    weight_sum += pairs[k].const_weight();
+                    weight_sum += pairs[k].weight;
                 }
             }
 
@@ -79,12 +79,12 @@ int main()
         allocate_particles(start_particles, particle_ptrs);
 
         ks_swarm swarm(particle_ptrs);
-        swarm.vmax() = 4.0;
+        swarm.vmax = 4.0;
 
         swarm.update_fitness();
 
         ks_bpso bpso(&swarm);
-        bpso.generation_count() = 500;
+        bpso.generation_count = 500;
 
         bpso.run();
 
@@ -112,13 +112,13 @@ int main()
         allocate_particles(start_particles, particle_ptrs);
 
         ks_swarm swarm(particle_ptrs);
-        swarm.vmax() = 4.0;
+        swarm.vmax = 4.0;
 
         swarm.update_fitness();
 
         ks_tvbpso tvbpso(&swarm);
-        tvbpso.generation_count() = 500;
-        tvbpso.max_iteration() = 10;
+        tvbpso.generation_count = 500;
+        tvbpso.max_iteration = 10;
 
         tvbpso.run();
 

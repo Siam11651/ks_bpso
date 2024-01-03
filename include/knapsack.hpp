@@ -6,17 +6,12 @@
 
 class ks_pair
 {
-private:
-    uint64_t m_weight;
-    uint64_t m_profit;
-
 public:
+    uint64_t weight;
+    uint64_t profit;
+
     ks_pair();
     ks_pair(const uint64_t &_weight, const uint64_t &_profit);
-    uint64_t &weight();
-    const uint64_t &const_weight() const;
-    uint64_t &profit();
-    const uint64_t &const_profit() const;
 };
 
 class ks_problem
@@ -27,8 +22,8 @@ private:
 
 public:
     ks_problem(std::istream &_istream);
-    const std::vector<ks_pair> &const_ks_pairs() const;
-    const size_t &const_capacity() const;
+    const std::vector<ks_pair> &get_ks_pairs() const;
+    const size_t &get_capacity() const;
 };
 
 class ks_particle : public particle<bool, double, uint64_t>
@@ -46,46 +41,36 @@ public:
 class ks_swarm : public swarm<bool, double, uint64_t>
 {
 private:
-    double m_vmax;
     double sigmoid(const double &in);
 
 public:
+    double vmax;
+
     ks_swarm();
     ks_swarm(const std::vector<ks_particle *> &_particle_ptrs);
-    double &vmax();
-    const double &vmax() const;
     void update_position();
 };
 
 class ks_bpso : public pso<bool, double, uint64_t>
 {
-protected:
-    size_t m_generation_count;
-
 public:
+    size_t generation_count;
+
     ks_bpso(ks_swarm *_swarm_ptr);
     ks_bpso(const size_t &_generation_count, ks_swarm *_swarm_ptr);
-    size_t &generation_count();
-    const size_t &const_generation_count() const;
     virtual void run();
 };
 
 class ks_tvbpso : public ks_bpso
 {
-private:
-    size_t m_max_iteration;
-    double m_vlow;
-    double m_vhigh;
-
 public:
+    size_t max_iteration;
+    double vlow;
+    double vhigh;
+
     ks_tvbpso(ks_swarm *_swarm_ptr);
-    ks_tvbpso(const size_t &_generation_count, const size_t &_max_iteration, ks_swarm *_swarm_ptr);
-    size_t &max_iteration();
-    const size_t &const_max_iteration() const;
-    double &vlow();
-    const double &const_vlow() const;
-    double &vhigh();
-    const double &const_vhigh() const;
+    ks_tvbpso(const size_t &_generation_count, const size_t &_max_iteration,
+        ks_swarm *_swarm_ptr);
     void run();
 };
 

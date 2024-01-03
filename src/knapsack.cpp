@@ -6,32 +6,12 @@
 std::random_device rand_gen;
 
 ks_pair::ks_pair() :
-    m_weight(0),
-    m_profit(0) {}
+    weight(0),
+    profit(0) {}
 
 ks_pair::ks_pair(const uint64_t &_weight, const uint64_t &_profit) :
-    m_weight(_weight),
-    m_profit(_profit) {}
-
-uint64_t &ks_pair::weight()
-{
-    return m_weight;
-}
-
-const uint64_t &ks_pair::const_weight() const
-{
-    return m_weight;
-}
-
-uint64_t &ks_pair::profit()
-{
-    return m_profit;
-}
-
-const uint64_t &ks_pair::const_profit() const
-{
-    return m_profit;
-}
+    weight(_weight),
+    profit(_profit) {}
 
 ks_problem::ks_problem(std::istream &_istream)
 {
@@ -43,23 +23,23 @@ ks_problem::ks_problem(std::istream &_istream)
 
     for(size_t i = 0; i < pair_count; ++i)
     {
-        _istream >> m_ks_pairs[i].weight();
+        _istream >> m_ks_pairs[i].weight;
     }
 
     for(size_t i = 0; i < pair_count; ++i)
     {
-        _istream >> m_ks_pairs[i].profit();
+        _istream >> m_ks_pairs[i].profit;
     }
 
     _istream >> m_capacity;
 }
 
-const std::vector<ks_pair> &ks_problem::const_ks_pairs() const
+const std::vector<ks_pair> &ks_problem::get_ks_pairs() const
 {
     return m_ks_pairs;
 }
 
-const size_t &ks_problem::const_capacity() const
+const size_t &ks_problem::get_capacity() const
 {
     return m_capacity;
 }
@@ -78,16 +58,16 @@ void ks_particle::update_fitness()
     uint64_t weight_sum = 0;
     uint64_t profit_sum = 0;
 
-    for(size_t i = 0; i < problem.const_ks_pairs().size(); ++i)
+    for(size_t i = 0; i < problem.get_ks_pairs().size(); ++i)
     {
         if(position[i])
         {
-            weight_sum += problem.const_ks_pairs()[i].const_weight();
-            profit_sum += problem.const_ks_pairs()[i].const_profit();
+            weight_sum += problem.get_ks_pairs()[i].weight;
+            profit_sum += problem.get_ks_pairs()[i].profit;
         }
     }
 
-    if(weight_sum <= problem.const_capacity())
+    if(weight_sum <= problem.get_capacity())
     {
         if(!best_fitness.has_value() || profit_sum > best_fitness)
         {
@@ -103,26 +83,16 @@ double ks_swarm::sigmoid(const double &x)
 }
 
 ks_swarm::ks_swarm() :
-    m_vmax(6.0),
+    vmax(6.0),
     swarm() {}
 
 ks_swarm::ks_swarm(const std::vector<ks_particle *> &_particle_ptrs) :
-    m_vmax(6.0)
+    vmax(6.0)
 {
     for(size_t i = 0; i < _particle_ptrs.size(); ++i)
     {
         m_particle_ptrs.push_back(_particle_ptrs[i]);
     }
-}
-
-double &ks_swarm::vmax()
-{
-    return m_vmax;
-}
-
-const double &ks_swarm::vmax() const
-{
-    return m_vmax;
 }
 
 void ks_swarm::update_position()
@@ -143,7 +113,7 @@ void ks_swarm::update_position()
         {
             velocity[i] += c0 * r0 * (best_position[i] - position[i])
                 + c1 * r1 * (m_best_position.value()[i] - position[i]);
-            velocity[i] = std::clamp(velocity[i], -m_vmax, m_vmax);
+            velocity[i] = std::clamp(velocity[i], -vmax, vmax);
             velocity[i] = sigmoid(velocity[i]);
             double rand_value = random::get_double();
             
@@ -160,26 +130,16 @@ void ks_swarm::update_position()
 }
 
 ks_bpso::ks_bpso(ks_swarm *_swarm_ptr) :
-    m_generation_count(100) ,
+    generation_count(100) ,
     pso(_swarm_ptr) {}
 
 ks_bpso::ks_bpso(const size_t &_generation_count, ks_swarm *_swarm_ptr) :
-    m_generation_count(_generation_count) ,
+    generation_count(_generation_count) ,
     pso(_swarm_ptr) {}
-
-size_t &ks_bpso::generation_count()
-{
-    return m_generation_count;
-}
-
-const size_t &ks_bpso::const_generation_count() const
-{
-    return m_generation_count;
-}
 
 void ks_bpso::run()
 {
-    for(size_t i = 0; i < m_generation_count; ++i)
+    for(size_t i = 0; i < generation_count; ++i)
     {
         m_swarm_ptr->update_position();
         m_swarm_ptr->update_fitness();
@@ -187,55 +147,25 @@ void ks_bpso::run()
 }
 
 ks_tvbpso::ks_tvbpso(ks_swarm *_swarm_ptr) :
-    m_max_iteration(10),
-    m_vlow(2.0),
-    m_vhigh(4.0),
+    max_iteration(10),
+    vlow(2.0),
+    vhigh(4.0),
     ks_bpso(_swarm_ptr) {}
 
 ks_tvbpso::ks_tvbpso(const size_t &_generation_count, const size_t &_max_iteration,
     ks_swarm *_swarm_ptr) :
-    m_max_iteration(_max_iteration),
-    m_vlow(2.0),
-    m_vhigh(4.0),
+    max_iteration(_max_iteration),
+    vlow(2.0),
+    vhigh(4.0),
     ks_bpso(_generation_count, _swarm_ptr) {}
-
-size_t &ks_tvbpso::max_iteration()
-{
-    return m_max_iteration;
-}
-
-const size_t &ks_tvbpso::const_max_iteration() const
-{
-    return m_max_iteration;
-}
-
-double &ks_tvbpso::vlow()
-{
-    return m_vlow;
-}
-
-const double &ks_tvbpso::const_vlow() const
-{
-    return m_vlow;
-}
-
-double &ks_tvbpso::vhigh()
-{
-    return m_vhigh;
-}
-
-const double &ks_tvbpso::const_vhigh() const
-{
-    return m_vhigh;
-}
 
 void ks_tvbpso::run()
 {
-    for(size_t i = 0; i < m_max_iteration; ++i)
+    for(size_t i = 0; i < max_iteration; ++i)
     {
-        ((ks_swarm *)m_swarm_ptr)->vmax() = m_vlow + (i * (m_vhigh - m_vlow)) / m_max_iteration;
+        ((ks_swarm *)m_swarm_ptr)->vmax = vlow + (i * (vhigh - vlow)) / max_iteration;
 
-        for(size_t j = 0; j < m_generation_count; ++j)
+        for(size_t j = 0; j < generation_count; ++j)
         {
             m_swarm_ptr->update_position();
             m_swarm_ptr->update_fitness();
