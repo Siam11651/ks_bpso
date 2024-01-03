@@ -5,11 +5,11 @@
 #include <random.hpp>
 
 constexpr size_t MAX_GENERATIONS = 500;
-constexpr size_t MAX_ITERATIONS = 2;
+constexpr size_t MAX_ITERATIONS = 10;
 
 int main()
 {
-    std::ifstream data_ifstream("datasets/ks_16a.dat");
+    std::ifstream data_ifstream("datasets/ks_24a.dat");
     ks_problem problem(data_ifstream);
 
     data_ifstream.close();
@@ -154,7 +154,7 @@ int main()
         ks_ntvbpso ntvbpso(&swarm);
         ntvbpso.generation_count = MAX_GENERATIONS;
         ntvbpso.max_iteration = MAX_ITERATIONS;
-        ntvbpso.param = 0.1;
+        ntvbpso.param = 100000000;
 
         ntvbpso.run();
 
