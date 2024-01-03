@@ -10,7 +10,9 @@ protected:
     swarm<P, V, F> *m_swarm_ptr;
 
 public:
-    pso(swarm<P, V, F> *_swarm_ptr);
+    pso(swarm<P, V, F> *_swarm_ptr) :
+    m_swarm_ptr(_swarm_ptr) {};
+    
     virtual void run() = 0;
 };
 

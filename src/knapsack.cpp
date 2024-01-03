@@ -80,7 +80,7 @@ void ks_particle::update_fitness()
 
     for(size_t i = 0; i < problem.const_ks_pairs().size(); ++i)
     {
-        if(m_position[i])
+        if(position[i])
         {
             weight_sum += problem.const_ks_pairs()[i].const_weight();
             profit_sum += problem.const_ks_pairs()[i].const_profit();
@@ -89,10 +89,10 @@ void ks_particle::update_fitness()
 
     if(weight_sum <= problem.const_capacity())
     {
-        if(!m_best_fitness.has_value() || profit_sum > m_best_fitness)
+        if(!best_fitness.has_value() || profit_sum > best_fitness)
         {
-            m_best_fitness = profit_sum;
-            m_best_position = m_position;
+            best_fitness = profit_sum;
+            best_position = position;
         }
     }
 }
@@ -132,9 +132,9 @@ void ks_swarm::update_position()
 
     for(particle<bool, double, uint64_t> *item : m_particle_ptrs)
     {
-        std::vector<bool> &position = item->position();
-        std::vector<bool> &best_position = item->best_position().value();
-        std::vector<double> &velocity = item->velocity();
+        std::vector<bool> &position = item->position;
+        std::vector<bool> &best_position = item->best_position.value();
+        std::vector<double> &velocity = item->velocity;
         const double r0 = random::get_double();
         const double r1 = random::get_double();
         const size_t dimension = velocity.size();

@@ -88,7 +88,7 @@ int main()
 
         bpso.run();
 
-        max_weight_sum += swarm.const_best_fitness().value();
+        max_weight_sum += swarm.best_fitness.value();
 
         deallocate_particles(particle_ptrs);
     }
@@ -122,7 +122,7 @@ int main()
 
         tvbpso.run();
 
-        max_weight_sum += swarm.const_best_fitness().value();
+        max_weight_sum += swarm.best_fitness.value();
 
         deallocate_particles(particle_ptrs);
     }
