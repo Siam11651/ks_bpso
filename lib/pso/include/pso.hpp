@@ -11,7 +11,7 @@ protected:
 
 public:
     pso(swarm<P, V, F> *_swarm_ptr) :
-    m_swarm_ptr(_swarm_ptr) {};
+        m_swarm_ptr(_swarm_ptr) {};
     
     virtual void run() = 0;
 };

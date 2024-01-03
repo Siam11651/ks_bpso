@@ -118,7 +118,7 @@ int main()
 
         ks_tvbpso tvbpso(&swarm);
         tvbpso.generation_count = 500;
-        tvbpso.max_iteration = 10;
+        tvbpso.max_iteration = 2;
 
         tvbpso.run();
 

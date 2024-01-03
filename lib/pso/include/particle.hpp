@@ -17,8 +17,8 @@ public:
     particle() {}
     
     particle(const std::vector<P> &_position, const std::vector<V> &_velocity) :
-    position(_position),
-    velocity(_velocity) {}
+        position(_position),
+        velocity(_velocity) {}
 
     virtual void update_fitness() = 0;
 };

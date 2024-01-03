@@ -16,7 +16,7 @@ public:
     swarm() {}
 
     swarm(const std::vector<particle<P, V, F> *> &_particle_ptrs) :
-    m_particle_ptrs(_particle_ptrs) {}
+        m_particle_ptrs(_particle_ptrs) {}
 
     virtual void update_position() = 0;
 
