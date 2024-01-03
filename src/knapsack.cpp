@@ -172,3 +172,28 @@ void ks_tvbpso::run()
         }
     }
 }
+
+ks_ntvbpso::ks_ntvbpso(ks_swarm *_swarm_ptr) :
+    param(1.0),
+    ks_tvbpso(_swarm_ptr) {}
+
+ks_ntvbpso::ks_ntvbpso(const double &_param, const size_t &_generation_count, const size_t &_max_iteration,
+    ks_swarm *_swarm_ptr) :
+    param(_param),
+    ks_tvbpso(_generation_count, _max_iteration, _swarm_ptr) {}
+
+void ks_ntvbpso::run()
+{
+    for(size_t i = 0; i < max_iteration; ++i)
+    {
+        const double new_vmax = vlow + ((vhigh - vlow) / (param * M_E - 1))
+            * (std::pow(param * M_E, (double)i / max_iteration) - 1);
+        ((ks_swarm *)m_swarm_ptr)->vmax = new_vmax;
+
+        for(size_t j = 0; j < generation_count; ++j)
+        {
+            m_swarm_ptr->update_position();
+            m_swarm_ptr->update_fitness();
+        }
+    }
+}

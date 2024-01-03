@@ -4,6 +4,9 @@
 #include <knapsack.hpp>
 #include <random.hpp>
 
+constexpr size_t MAX_GENERATIONS = 500;
+constexpr size_t MAX_ITERATIONS = 2;
+
 int main()
 {
     std::ifstream data_ifstream("datasets/ks_16a.dat");
@@ -84,7 +87,7 @@ int main()
         swarm.update_fitness();
 
         ks_bpso bpso(&swarm);
-        bpso.generation_count = 500;
+        bpso.generation_count = MAX_GENERATIONS;
 
         bpso.run();
 
@@ -112,13 +115,12 @@ int main()
         allocate_particles(start_particles, particle_ptrs);
 
         ks_swarm swarm(particle_ptrs);
-        swarm.vmax = 4.0;
 
         swarm.update_fitness();
 
         ks_tvbpso tvbpso(&swarm);
-        tvbpso.generation_count = 500;
-        tvbpso.max_iteration = 2;
+        tvbpso.generation_count = MAX_GENERATIONS;
+        tvbpso.max_iteration = MAX_ITERATIONS;
 
         tvbpso.run();
 
@@ -131,6 +133,40 @@ int main()
 
     std::cout << std::fixed << "TVSPBSO Average: " << (double)max_weight_sum / 30 << std::endl;
     std::cout << "TVSBPSO Time: "
+        << std::chrono::duration_cast<std::chrono::nanoseconds>(end_point - start_point).count() / 1e9
+        << "s" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Starting NTVSBPSO..." << std::endl;
+
+    max_weight_sum = 0;
+    start_point = std::chrono::steady_clock::now();
+
+    for(size_t i = 0; i < 30; ++i)
+    {
+        std::vector<ks_particle *> particle_ptrs(swarm_size);
+
+        allocate_particles(start_particles, particle_ptrs);
+
+        ks_swarm swarm(particle_ptrs);
+
+        swarm.update_fitness();
+
+        ks_ntvbpso ntvbpso(&swarm);
+        ntvbpso.generation_count = MAX_GENERATIONS;
+        ntvbpso.max_iteration = MAX_ITERATIONS;
+        ntvbpso.param = 0.1;
+
+        ntvbpso.run();
+
+        max_weight_sum += swarm.best_fitness.value();
+
+        deallocate_particles(particle_ptrs);
+    }
+
+    end_point = std::chrono::steady_clock::now();
+
+    std::cout << std::fixed << "NTVSPBSO Average: " << (double)max_weight_sum / 30 << std::endl;
+    std::cout << "NTVSBPSO Time: "
         << std::chrono::duration_cast<std::chrono::nanoseconds>(end_point - start_point).count() / 1e9
         << "s" << std::endl;
 

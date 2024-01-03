@@ -74,4 +74,15 @@ public:
     void run();
 };
 
+class ks_ntvbpso : public ks_tvbpso
+{
+public:
+    double param;
+
+    ks_ntvbpso(ks_swarm *_swarm_ptr);
+    ks_ntvbpso(const double &_param, const size_t &_generation_count, const size_t &_max_iteration,
+        ks_swarm *_swarm_ptr);
+    void run();
+};
+
 #endif
