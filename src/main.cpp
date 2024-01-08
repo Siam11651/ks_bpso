@@ -1,15 +1,38 @@
 #include <iostream>
 #include <fstream>
 #include <chrono>
+#include <array>
+#include <filesystem>
 #include <knapsack.hpp>
 #include <random.hpp>
 
-constexpr size_t MAX_GENERATIONS = 500;
-constexpr size_t MAX_ITERATIONS = 3;
+const std::string DATASET_NAME = "ks_16a";
+constexpr size_t SWARM_SIZE = 40;
+constexpr size_t MAX_GENERATIONS = 1;
+constexpr size_t MAX_ITERATIONS = 500;
+constexpr double PARAM = 100000;
+constexpr size_t TRIALS = 30;
+constexpr size_t RUNS = 10;
+
+void allocate_particles(std::vector<ks_particle> &_start_particles, std::vector<ks_particle *> &_particle_ptrs)
+{
+    for(size_t i = 0; i < _particle_ptrs.size(); ++i)
+    {
+        _particle_ptrs[i] = new ks_particle(_start_particles[i]);
+    }
+}
+
+void deallocate_particles(std::vector<ks_particle *> &_particle_ptrs)
+{
+    for(size_t i = 0; i < _particle_ptrs.size(); ++i)
+    {
+        delete _particle_ptrs[i];
+    }
+}
 
 int main()
 {
-    std::ifstream data_ifstream("datasets/ks_24a.dat");
+    std::ifstream data_ifstream("datasets/" + DATASET_NAME + ".dat");
     ks_problem problem(data_ifstream);
 
     data_ifstream.close();
@@ -17,158 +40,168 @@ int main()
     const size_t &capacity = problem.get_capacity();
     const std::vector<ks_pair> &pairs = problem.get_ks_pairs();
     const size_t dimension = pairs.size();
-    const size_t swarm_size = 40;
+    std::array<double, RUNS> sbpso_data;
+    std::array<double, RUNS> tvsbpso_data;
+    std::array<double, RUNS> ntvsbpso_data;
 
-    std::vector<ks_particle> start_particles;
-
-    for(size_t j = 0; j < swarm_size; ++j)
+    for(size_t i = 0; i < RUNS; ++i)
     {
-        std::vector<bool> position(dimension);
-        std::vector<double> velocity(dimension);
+        std::clog << "=== Start run " << i + 1 << " ===" << std::endl;
 
-        while(true)
+        std::vector<ks_particle> start_particles;
+
+        for(size_t j = 0; j < SWARM_SIZE; ++j)
         {
-            size_t weight_sum = 0;
+            std::vector<bool> position(dimension);
+            std::vector<double> velocity(dimension);
 
-            for(size_t k = 0; k < dimension; ++k)
+            while(true)
             {
-                position[k] = random::get_bool();
+                size_t weight_sum = 0;
 
-                if(position[k])
+                for(size_t k = 0; k < dimension; ++k)
                 {
-                    weight_sum += pairs[k].weight;
+                    position[k] = random::get_bool();
+
+                    if(position[k])
+                    {
+                        weight_sum += pairs[k].weight;
+                    }
+                }
+
+                if(weight_sum <= capacity)
+                {
+                    break;
                 }
             }
 
-            if(weight_sum <= capacity)
+            for(size_t k = 0; k < dimension; ++k)
             {
-                break;
+                velocity[k] = random::get_bool();
             }
+
+            start_particles.emplace_back(&problem, position, velocity);
         }
 
-        for(size_t k = 0; k < dimension; ++k)
+        std::clog << "Starting SBPSO..." << std::endl;
+
+        size_t max_weight_sum = 0;
+        std::chrono::steady_clock::time_point start_point = std::chrono::steady_clock::now();
+
+        for(size_t j = 0; j < TRIALS; ++j)
         {
-            velocity[k] = random::get_bool();
+            std::vector<ks_particle *> particle_ptrs(SWARM_SIZE);
+
+            allocate_particles(start_particles, particle_ptrs);
+
+            ks_swarm swarm(particle_ptrs);
+            swarm.vmax = 4.0;
+
+            swarm.update_fitness();
+
+            ks_bpso bpso(&swarm);
+            bpso.generation_count = MAX_ITERATIONS * MAX_GENERATIONS;
+
+            bpso.run();
+
+            max_weight_sum += swarm.best_fitness.value();
+
+            deallocate_particles(particle_ptrs);
         }
 
-        start_particles.emplace_back(&problem, position, velocity);
-    }
+        std::chrono::steady_clock::time_point end_point = std::chrono::steady_clock::now();
+        sbpso_data[i] = (double)max_weight_sum / TRIALS;
 
-    auto allocate_particles = [](std::vector<ks_particle> &_start_particles,
-        std::vector<ks_particle *> &_particle_ptrs) -> void
-    {
-        for(size_t i = 0; i < _particle_ptrs.size(); ++i)
+        std::clog << '\t' << std::fixed << "Average: " << sbpso_data[i] << std::endl;
+        std::clog << '\t' << "Time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_point - start_point).count() / 1e9 << "s" << std::endl;
+        std::clog << "Starting TVSBPSO..." << std::endl;
+
+        max_weight_sum = 0;
+        start_point = std::chrono::steady_clock::now();
+
+        for(size_t j = 0; j < TRIALS; ++j)
         {
-            _particle_ptrs[i] = new ks_particle(_start_particles[i]);
+            std::vector<ks_particle *> particle_ptrs(SWARM_SIZE);
+
+            allocate_particles(start_particles, particle_ptrs);
+
+            ks_swarm swarm(particle_ptrs);
+
+            swarm.update_fitness();
+
+            ks_tvbpso tvbpso(&swarm);
+            tvbpso.generation_count = MAX_GENERATIONS;
+            tvbpso.max_iteration = MAX_ITERATIONS;
+
+            tvbpso.run();
+
+            max_weight_sum += swarm.best_fitness.value();
+
+            deallocate_particles(particle_ptrs);
         }
-    };
-    auto deallocate_particles = [](std::vector<ks_particle *> &_particle_ptrs) -> void
-    {
-        for(size_t i = 0; i < _particle_ptrs.size(); ++i)
+
+        end_point = std::chrono::steady_clock::now();
+        tvsbpso_data[i] = (double)max_weight_sum / TRIALS;
+
+        std::clog << '\t' << std::fixed << "Average: " << tvsbpso_data[i] << std::endl;
+        std::clog << '\t' << "Time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_point - start_point).count() / 1e9 << "s" << std::endl;
+        std::clog << "Starting NTVSBPSO..." << std::endl;
+
+        max_weight_sum = 0;
+        start_point = std::chrono::steady_clock::now();
+
+        for(size_t j = 0; j < TRIALS; ++j)
         {
-            delete _particle_ptrs[i];
+            std::vector<ks_particle *> particle_ptrs(SWARM_SIZE);
+
+            allocate_particles(start_particles, particle_ptrs);
+
+            ks_swarm swarm(particle_ptrs);
+
+            swarm.update_fitness();
+
+            ks_ntvbpso ntvbpso(&swarm);
+            ntvbpso.generation_count = MAX_GENERATIONS;
+            ntvbpso.max_iteration = MAX_ITERATIONS;
+            ntvbpso.param = PARAM;
+
+            ntvbpso.run();
+
+            max_weight_sum += swarm.best_fitness.value();
+
+            deallocate_particles(particle_ptrs);
         }
-    };
 
-    std::cout << "Starting SBPSO..." << std::endl;
+        end_point = std::chrono::steady_clock::now();
+        ntvsbpso_data[i] = (double)max_weight_sum / TRIALS;
 
-    size_t max_weight_sum = 0;
-    std::chrono::steady_clock::time_point start_point = std::chrono::steady_clock::now();
+        std::clog << '\t' << std::fixed << "Average: " << ntvsbpso_data[i] << std::endl;
+        std::clog << '\t' << "Time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_point - start_point).count() / 1e9 << "s" << std::endl;
 
-    for(size_t i = 0; i < 30; ++i)
-    {
-        std::vector<ks_particle *> particle_ptrs(swarm_size);
-
-        allocate_particles(start_particles, particle_ptrs);
-
-        ks_swarm swarm(particle_ptrs);
-        swarm.vmax = 4.0;
-
-        swarm.update_fitness();
-
-        ks_bpso bpso(&swarm);
-        bpso.generation_count = MAX_GENERATIONS;
-
-        bpso.run();
-
-        max_weight_sum += swarm.best_fitness.value();
-
-        deallocate_particles(particle_ptrs);
+        std::clog << "=== End run " << i + 1 << " ===" << std::endl;
+        std::clog << std::endl;
     }
 
-    std::chrono::steady_clock::time_point end_point = std::chrono::steady_clock::now();
+    std::filesystem::create_directory("report");
 
-    std::cout << std::fixed << "SBPSO Average: " << (double)max_weight_sum / 30 << std::endl;
-    std::cout << "SBPSO Time: "
-        << std::chrono::duration_cast<std::chrono::nanoseconds>(end_point - start_point).count() / 1e9
-        << "s" << std::endl;
-    std::cout << std::endl;
-    std::cout << "Starting TVSBPSO..." << std::endl;
+    std::ofstream report_ofstream("report/" + DATASET_NAME + ".csv");
 
-    max_weight_sum = 0;
-    start_point = std::chrono::steady_clock::now();
+    report_ofstream << "Dataset Name: " << DATASET_NAME << std::endl;
+    report_ofstream << "Swarm Size: " << SWARM_SIZE << std::endl;
+    report_ofstream << "Max Generations: " << MAX_GENERATIONS << std::endl;
+    report_ofstream << "Max Iterations: " << MAX_ITERATIONS << std::endl;
+    report_ofstream << "Param: " << std::fixed << PARAM << std::endl;
+    report_ofstream << "Trial: " << TRIALS << std::endl;
+    report_ofstream << "Runs: " << RUNS << std::endl;
+    report_ofstream << std::endl;
+    report_ofstream << "SBPSO,TVSBPSO,NTVSBPSO" << std::endl;
 
-    for(size_t i = 0; i < 30; ++i)
+    for(size_t i = 0; i < RUNS; ++i)
     {
-        std::vector<ks_particle *> particle_ptrs(swarm_size);
-
-        allocate_particles(start_particles, particle_ptrs);
-
-        ks_swarm swarm(particle_ptrs);
-
-        swarm.update_fitness();
-
-        ks_tvbpso tvbpso(&swarm);
-        tvbpso.generation_count = MAX_GENERATIONS;
-        tvbpso.max_iteration = MAX_ITERATIONS;
-
-        tvbpso.run();
-
-        max_weight_sum += swarm.best_fitness.value();
-
-        deallocate_particles(particle_ptrs);
+        report_ofstream << std::fixed << sbpso_data[i] << ',' << tvsbpso_data[i] << ',' << ntvsbpso_data[i] << std::endl;
     }
 
-    end_point = std::chrono::steady_clock::now();
-
-    std::cout << std::fixed << "TVSPBSO Average: " << (double)max_weight_sum / 30 << std::endl;
-    std::cout << "TVSBPSO Time: "
-        << std::chrono::duration_cast<std::chrono::nanoseconds>(end_point - start_point).count() / 1e9
-        << "s" << std::endl;
-    std::cout << std::endl;
-    std::cout << "Starting NTVSBPSO..." << std::endl;
-
-    max_weight_sum = 0;
-    start_point = std::chrono::steady_clock::now();
-
-    for(size_t i = 0; i < 30; ++i)
-    {
-        std::vector<ks_particle *> particle_ptrs(swarm_size);
-
-        allocate_particles(start_particles, particle_ptrs);
-
-        ks_swarm swarm(particle_ptrs);
-
-        swarm.update_fitness();
-
-        ks_ntvbpso ntvbpso(&swarm);
-        ntvbpso.generation_count = MAX_GENERATIONS;
-        ntvbpso.max_iteration = MAX_ITERATIONS;
-        ntvbpso.param = 0.35;
-
-        ntvbpso.run();
-
-        max_weight_sum += swarm.best_fitness.value();
-
-        deallocate_particles(particle_ptrs);
-    }
-
-    end_point = std::chrono::steady_clock::now();
-
-    std::cout << std::fixed << "NTVSPBSO Average: " << (double)max_weight_sum / 30 << std::endl;
-    std::cout << "NTVSBPSO Time: "
-        << std::chrono::duration_cast<std::chrono::nanoseconds>(end_point - start_point).count() / 1e9
-        << "s" << std::endl;
+    report_ofstream.close();
 
     return 0;
 }
