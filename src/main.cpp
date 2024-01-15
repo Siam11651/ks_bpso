@@ -10,7 +10,7 @@ const std::string DATASET_NAME = "ks_16a";
 constexpr size_t SWARM_SIZE = 40;
 constexpr size_t MAX_GENERATIONS = 1;
 constexpr size_t MAX_ITERATIONS = 500;
-constexpr double PARAM = 100000;
+constexpr double PARAM = 10.0;
 constexpr size_t TRIALS = 30;
 constexpr size_t RUNS = 10;
 

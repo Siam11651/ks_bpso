@@ -187,7 +187,7 @@ void ks_ntvbpso::run()
     for(size_t i = 0; i < max_iteration; ++i)
     {
         const double new_vmax = vlow + ((vhigh - vlow) / (param * M_E - 1))
-            * (std::pow(param * M_E, (double)i / max_iteration) - 1);
+            * (std::pow(param * M_E, 1.0 - (double)i / max_iteration) - 1);
         ((ks_swarm *)m_swarm_ptr)->vmax = new_vmax;
 
         for(size_t j = 0; j < generation_count; ++j)
