@@ -6,10 +6,10 @@
 #include <knapsack.hpp>
 #include <random.hpp>
 
-const std::string DATASET_NAME = "ks_16a";
+const std::string DATASET_NAME = "ks_20a";
 constexpr size_t SWARM_SIZE = 40;
-constexpr size_t MAX_GENERATIONS = 1;
-constexpr size_t MAX_ITERATIONS = 500;
+constexpr size_t MAX_GENERATIONS = 10;
+constexpr size_t MAX_ITERATIONS = 10;
 constexpr double PARAM = 10.0;
 constexpr size_t TRIALS = 30;
 constexpr size_t RUNS = 10;
